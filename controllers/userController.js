@@ -1,5 +1,7 @@
- const User = require('../models/user_model');
+ const { Router } = require('express');
+const User = require('../models/user_model');
  const jwt=require('jsonwebtoken');
+const auth = require('../middlewares/auth');
  exports.salam=(req,res)=>{
     res.send({message:'users module'})
 }
@@ -21,7 +23,7 @@ exports.signup = (req, res) => {
 //sign in 
 
 exports.signin = (req, res) => {
-    const { email, password } = req.body;
+    const { email,  password } = req.body;
   
     User.findOne({ email })
       .then((user) => {
@@ -39,13 +41,13 @@ exports.signin = (req, res) => {
   
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
   
-        res.cookie('token', token, { expire: new Date() + 10000000000 });
+        res.cookie('token', token, { expire: new Date() + 200000000000 });
   
-        const { _id, name, email, role } = user;
+        const { _id, name, email, phoneNumber ,role } = user;
   
         return res.json({
           token,
-          user: { _id, name, email, role },
+          user: { _id, name, email,phoneNumber ,role },
         });
       })
       .catch((err) => {
@@ -55,7 +57,67 @@ exports.signin = (req, res) => {
         });
       });
   };
+
+  //  abderahime 
+
+  exports.authwithToken = async (req ,res) => { 
+    try {
+
+      const token =req.header("token");
+      if(!token)return res.json(false);
+      const verified =jwt.verify(token,process.env.JWT_SECRET);
+      if(!verified) return res.json(false);
  
+      const user =await User.findById(verified._id);
+      
+      if(!user)return res.json(false);
+      const { _id, name, email, phoneNumber ,role } = user;
+  
+        return res.json({
+          token,
+          user: { _id, name, email,phoneNumber ,role },
+        });  
+    } catch (error) {
+      res.status(500).json({error:e.message});
+    }
+  } ;
+
+  exports.authwithtoken2 =async (req,res,next)=>{
+      
+    try {
+        const token =req.header("token");
+        
+        if(!token) 
+        return res.status(401).json({msg:"no auth token ,denied access"});
+
+        const verified =jwt.verify(token,process.env.JWT_SECRET);
+        if(!verified){
+          return res.status(401).json({msg:"tokenverification failed, authorization denied"});
+        }
+       return res.json(verified);
+        
+    } catch (error) {
+        res.status(500).json({error:err.message});
+        
+    }
+};
+
+
+   
+  
+
+  
+ 
+// // get user data 
+// router.get("/", auth , async (req,res)=>{
+
+//   const user =await User.findById(req.user);
+//   res.json({ user: { _id, name, email,phoneNumber ,role },token:req.token});
+
+// });
+
+
+
   
 // sign out
 

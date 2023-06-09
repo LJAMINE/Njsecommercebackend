@@ -6,10 +6,12 @@ exports.userSignupValidator = [
   
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail(),
+  body('phoneNumber').isMobilePhone(),
   body('password','password is required !')
     .notEmpty()
     .isLength({ min: 6, max: 10 })
     .withMessage('Password must be between 6 to 10 characters'),
+
 
   (req, res, next) => {
     // Extract validation errors

@@ -24,8 +24,10 @@ mongoose.connect(url)
 app.use(express.json())
 // Validation middleware
 app.use(
+  
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail(),
+  body('phoneNumber').isMobilePhone(),
   body('password').notEmpty().isLength({ min: 6, max: 10 }).withMessage('Password must be between 6 to 10 characters')
 );
 
