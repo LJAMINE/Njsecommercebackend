@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const cookieparser=require('cookie-parser');
 
 //imports routes
+const authRoutes=require('./routes/auth_routes');
 const userRoutes=require('./routes/users_routes');
 
 //conig app
@@ -38,7 +39,8 @@ app.use(cookieparser())
 
 
 // routes middleware
-app.use('/api/users',userRoutes);
+app.use('/api',authRoutes);
+app.use('/api',userRoutes);
 
 
 const port=process.env.PORT||3000;
