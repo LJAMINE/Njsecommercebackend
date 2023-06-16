@@ -6,6 +6,8 @@ const cookieparser=require('cookie-parser');
 //imports routes
 const authRoutes=require('./routes/auth_routes');
 const userRoutes=require('./routes/users_routes');
+const categoryRoutes=require('./routes/categories');
+const productRoutes=require('./routes/product');
 
 //conig app
 const app=express();
@@ -41,6 +43,8 @@ app.use(cookieparser())
 // routes middleware
 app.use('/api',authRoutes);
 app.use('/api',userRoutes);
+app.use('/api/category',categoryRoutes);
+app.use('/api/product',productRoutes);
 
 
 const port=process.env.PORT||3000;

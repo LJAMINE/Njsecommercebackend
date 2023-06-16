@@ -2,7 +2,7 @@ const express=require('express');
 const {salam,signup, signin,signout,authwithToken, authwithtoken2}=require('../controllers/authController');
 const { userSignupValidator } = require('../middlewares/userValidator');
 //const {auth} =require("../middlewares/auth");
-// const{requireSignIn}=require('../middlewares/auth');
+const{requireSignIn}=require('../middlewares/auth');
 // const user = require('../models/user');
 const router=express.Router();
 router.get('/',salam);
@@ -14,5 +14,8 @@ router.get('/signout',signout)
 // router.get("/hello",requireSignIn,(req,res)=>{
 //     res.send('hello');
 // })
+router.get('/hello',requireSignIn,(req,res)=>{
+    res.send('hello there')
+})
 
 module.exports=router;
