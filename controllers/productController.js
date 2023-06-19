@@ -1,79 +1,68 @@
-// const Product = require('../models/product');
-// const fs = require('fs');
-
-// exports.createProduct = (req, res) => {
-//   import('formidable').then((formidable) => {
-//     let form = new formidable.IncomingForm();
-//     form.keepExtensions = true;
-
-//     form.parse(req, (err, fields, files) => {
-//       if (err) {
-//         return res.status(400).json({
-//           error: 'Image could not be uploaded',
-//         });
-//       }
-
-//       let product = new Product(fields);
-
-//       if (fields.photo) {
-//         product.photo.data = fs.readFileSync(files.photo.path);
-//         product.photo.contentType = files.photo.type;
-//       }
-
-//       product.save((err, savedProduct) => {
-//         if (err) {
-//           return res.status(400).json({
-//             error: 'Product could not be saved',
-//           });
-//         }
-
-//         res.json({
-//           product: savedProduct,
-//         });
-//       });
-//     });
-//   }).catch((err) => {
-//     console.error('Error occurred:', err);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   });
-// };
-
-
-
-
 const Product = require('../models/product');
-const fs = require('fs').promises;
+const fs = require('fs');
+const multer = require('multer');
+const Joi = require('joi');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads/'); // Specify the destination folder for uploaded files
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); // Use the original file name
+  },
+});
+
+const upload = multer({ storage });
+
+const schema = Joi.object({
+  name: Joi.string().required(),
+  description: Joi.string().required(),
+  price: Joi.number().required(),
+  quantity: Joi.number().integer().required(),
+  category: Joi.string().required(),
+});
 
 exports.createProduct = async (req, res) => {
   try {
-    const formidable = await import('formidable');
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
-
-    const { fields, files } = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
+    await new Promise((resolve, reject) => {
+      upload.single('photo')(req, res, (err) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve();
         }
-        resolve({ fields, files });
       });
     });
 
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    const { name, description, price, quantity,category } = value;
+
     const productFields = {
-      name: fields.name[0],
-      description: fields.description[0],
-      price: parseFloat(fields.price[0]),
-      quantity: parseInt(fields.quantity[0]),
+      name,
+      description,
+      price: parseFloat(price), // Convert price to a number
+      quantity: parseInt(quantity),
+       category,
     };
 
     const product = new Product(productFields);
 
-    if (fields.photo) {
-      const photoData = await fs.readFile(files.photo.path);
-      product.photo.data = photoData;
-      product.photo.contentType = files.photo.type;
-    }
+    if (req.file) {
+      if (req.file.size > 1 * 1024 * 1024) {
+        // 1 MB limit
+        return res.status(400).json({
+          error: 'Image should be less than 1MB',
+        });
+      }
 
+      const photoData = fs.readFileSync(req.file.path);
+      product.photo.data = photoData;
+      product.photo.contentType = req.file.mimetype;
+    }
     const savedProduct = await product.save();
     res.json({ product: savedProduct });
   } catch (error) {
@@ -84,50 +73,94 @@ exports.createProduct = async (req, res) => {
 
 
 
+
+
+
 // const Product = require('../models/product');
-// const fs = require('fs');
+// const fs =require('fs');
+
+// const formidable=require('formidable');
+
+// exports.craeteProduct=(req,res)=>{
+//   let form =new formidable.IncomingForm();
+
+//   form.keepExtentions=true;
+
+//   form.parse(req,(err,fields,files)=>{
+
+//     if(err){
+//       return res.status(400).json({
+//         error:'image not upload '
+//       })
+//     }
+
+//     let product=new Product(fields);
+
+//     if(fields.photo){
+
+//       product.photo.data = fs.readFileSync(files.photo.path)
+//       product.photo.contentType = files.photo.type
+      
+//     }
+
+//     photo.save((err,product)=>{
+//       if (err){
+//         return res.status(400).json({
+//           error:'product not persist  '
+//         })
+//       }
+//       res.json({
+//         product
+//       }) 
+      
+//     })
+   
+
+//   })
+// }
+
+
+
+// working just the problem in photo 
+
+// const Product = require('../models/product');
+// const fs = require('fs').promises;
 
 // exports.createProduct = async (req, res) => {
 //   try {
-//     const { IncomingForm } = await import('formidable');
-//     let form = new IncomingForm();
+//     const formidable = await import('formidable');
+//     const form = new formidable.IncomingForm();
 //     form.keepExtensions = true;
 
-//     form.parse(req, async (err, fields, files) => {
-//       if (err) {
-//         return res.status(400).json({
-//           error: 'Image could not be uploaded',
-//         });
-//       }
-
-//       let product = new Product(fields);
-
-//       if (files.photo && files.photo.path) {
-//         try {
-//           product.photo.data = fs.readFileSync(files.photo.path);
-//           product.photo.contentType = files.photo.type;
-//         } catch (error) {
-//           return res.status(500).json({
-//             error: 'Failed to read the photo file',
-//           });
+//     const { fields, files } = await new Promise((resolve, reject) => {
+//       form.parse(req, (err, fields, files) => {
+//         if (err) {
+//           return reject(err);
 //         }
-//       }
+//         resolve({ fields, files });
+//       });
+//     });
 
-//       try {
-//         const savedProduct = await product.save();
-//         res.json({
-//           product: savedProduct,
-//         });
-//       } catch (error) {
-//         return res.status(400).json({
-//           error: 'Failed to save the product',
-//         });
-//       }
-//     });
+//     const productFields = {
+//       name: fields.name[0],
+//       description: fields.description[0],
+//       price: parseFloat(fields.price[0]),
+//       quantity: parseInt(fields.quantity[0]),
+//     };
+
+//     const product = new Product(productFields);
+
+//     if (fields.photo) {
+//       const photoData = await fs.readFile(files.photo.path);
+//       product.photo.data = photoData;
+//       product.photo.contentType = files.photo.type;
+//     }
+
+//     const savedProduct = await product.save();
+//     res.json({ product: savedProduct });
 //   } catch (error) {
-//     return res.status(500).json({
-//       error: 'Internal server error',
-//     });
+//     console.error('Error occurred:', error);
+//     res.status(400).json({ error: 'Product could not be saved' });
 //   }
 // };
 

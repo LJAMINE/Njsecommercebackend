@@ -19,20 +19,19 @@ const productSchema= new mongoose.Schema({
     quantity:{
         type:Number,   
     },
-    photo:{
-        data:Buffer,
-        contentType:String
-    },
     category:{
         type:ObjectId,
         ref:'Category',
         require:true
     },
     shipping:{
-        require:false,
         type:Boolean,
+        require:false,
         default:false
-    }
+    } ,photo:{
+        data:Buffer,
+        contentType:String,
+    },
 
 },{timestamps:true});
 
