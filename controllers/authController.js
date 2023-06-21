@@ -102,6 +102,18 @@ exports.signin = (req, res) => {
     }
 };
 
+// sign out
+
+exports.signout=(req,res)=>{
+
+  res.clearCookie('token');
+
+  res.json({
+      message:"user signout"
+  })
+
+}
+
 // exports.updateprofile=async(req,res,next)=>{
 //   await commentModel.findByandUpdate(req.params._id,req.body).then((response)=>{
 //     res.status(200).json({success:true,Comment:response});
@@ -109,63 +121,8 @@ exports.signin = (req, res) => {
 // }
 
 
-   
-  
-
-  
- 
-// // get user data 
-// router.get("/", auth , async (req,res)=>{
-
-//   const user =await User.findById(req.user);
-//   res.json({ user: { _id, name, email,phoneNumber ,role },token:req.token});
-
-// });
 
 
-
-  
-// sign out
-
-  exports.signout=(req,res)=>{
-
-    res.clearCookie('token');
-
-    res.json({
-        message:"user signout"
-    })
-
-  }
-
-// exports.signin=(req,res)=>{
-
-//     const {email,password}=req.body;
-
-//     User.findOne({email},(err,user)=>{
-
-//         if(err||!user){
-//             return res.status(400).json({
-//                 error:'User not found this email , please sign up'
-//             })
-//         }
-
-//         if(user.authenticate()){
-//             return res.status(401).json({
-//                 error:'email and password dont match !!!'
-//             })
-//         }
-
-//         const token = jwt.sign({_id:user._id},process.env.JWT_SECRET);
-        
-//         res.cookie('token',token,{expire:new Date()+9000000})
-       
-//         const{ _id,name,email,role}=user;
-
-//        return  res.json({
-//             token , user :{_id,name,email,role}
-//         })
-//     })
-// }
 
 
 

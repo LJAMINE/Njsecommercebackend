@@ -2,8 +2,8 @@ const Product = require('../models/product');
 const fs = require('fs');
 const multer = require('multer');
 const Joi = require('joi');
+const mongoose = require('mongoose');
 const _ =require('lodash');
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, './uploads/'); // Specify the destination folder for uploaded files
@@ -41,13 +41,15 @@ exports.createProduct = async (req, res) => {
     }
 
     const { name, description, price, quantity,category } = value;
+    
+    const categoryObj =  new mongoose.Types.ObjectId(category); // Convert category to ObjectId
 
     const productFields = {
       name,
       description,
       price: parseFloat(price), // Convert price to a number
       quantity: parseInt(quantity),
-       category,
+       category: categoryObj,
     };
 
     const product = new Product(productFields);
@@ -169,96 +171,95 @@ exports.removeProduct = (req, res) => {
 
 
 
+exports.allProducts = (req, res) => {
+  let sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+  let order = req.query.order ? req.query.order : 'asc';
+  let limit = req.query.limit ? parseInt(req.query.limit) : 100;
+
+  Product.find()
+    .select("-photo")
+    .populate('category')
+    .sort([[sortBy, order]])
+    .limit(limit)
+    .then((products) => {
+      res.json({ products });
+    })
+    .catch((err) => {
+      return res.status(404).json({
+        error: 'Product not found',
+      });
+    });
+};
+
+exports.relatedProduct=(req,res)=>{
+
+  let limit = req.query.limit ? parseInt(req.query.limit) : 6;
 
 
-
-// const Product = require('../models/product');
-// const fs =require('fs');
-
-// const formidable=require('formidable');
-
-// exports.craeteProduct=(req,res)=>{
-//   let form =new formidable.IncomingForm();
-
-//   form.keepExtentions=true;
-
-//   form.parse(req,(err,fields,files)=>{
-
-//     if(err){
-//       return res.status(400).json({
-//         error:'image not upload '
-//       })
-//     }
-
-//     let product=new Product(fields);
-
-//     if(fields.photo){
-
-//       product.photo.data = fs.readFileSync(files.photo.path)
-//       product.photo.contentType = files.photo.type
-      
-//     }
-
-//     photo.save((err,product)=>{
-//       if (err){
-//         return res.status(400).json({
-//           error:'product not persist  '
-//         })
-//       }
-//       res.json({
-//         product
-//       }) 
-      
-//     })
-   
-
-//   })
-// }
+  Product.find({category:req.product.category,_id:{$ne:req.product._id}})
+         .limit(limit)
+         .select('-photo')
+         .populate('category','_id name')
+         .then((products) => {
+          res.json({ products });
+        })
+        .catch((err) => {
+          return res.status(404).json({
+            error: 'Product not found',
+          });
+        });
+}
 
 
+exports.searchProduct=(req,res)=>{
+  let sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+  let order = req.query.order ? req.query.order : 'asc';
+  let limit = req.query.limit ? parseInt(req.query.limit) : 100;
+  let skip = parseInt(req.body.skip);
+  let findArgs = {};
 
-// working just the problem in photo 
+  for(let key in req.body.filters){
+    if(req.body.filters[key].length > 0){
+      if (key === "price"){
+      //gte greater than price [0,10]
+      //Lte less than 
 
-// const Product = require('../models/product');
-// const fs = require('fs').promises;
+      findArgs[key]={
+        $gte:req.body.filters[key][0],
+        $lte:req.body.filters[key][1]
+      };
 
-// exports.createProduct = async (req, res) => {
-//   try {
-//     const formidable = await import('formidable');
-//     const form = new formidable.IncomingForm();
-//     form.keepExtensions = true;
+    }else{
+      findArgs[key]=req.body.filters[key];
+    }
+  }
+  }
 
-//     const { fields, files } = await new Promise((resolve, reject) => {
-//       form.parse(req, (err, fields, files) => {
-//         if (err) {
-//           return reject(err);
-//         }
-//         resolve({ fields, files });
-//       });
-//     });
+  Product.find(findArgs)
+    .select("-photo")
+    .populate('category')
+    .sort([[sortBy, order]])
+    .limit(limit)
+    .skip(skip)
+    .then((products) => {
+      res.json({ products });
+    })
+    .catch((err) => {
+      return res.status(404).json({
+        error: 'Product not found',
+      });
+    });
+}
 
-//     const productFields = {
-//       name: fields.name[0],
-//       description: fields.description[0],
-//       price: parseFloat(fields.price[0]),
-//       quantity: parseInt(fields.quantity[0]),
-//     };
+exports.photoProduct=(req,res)=>{
 
-//     const product = new Product(productFields);
+  const{data,contentType}=req.product.photo;
 
-//     if (fields.photo) {
-//       const photoData = await fs.readFile(files.photo.path);
-//       product.photo.data = photoData;
-//       product.photo.contentType = files.photo.type;
-//     }
+  if (data){
 
-//     const savedProduct = await product.save();
-//     res.json({ product: savedProduct });
-//   } catch (error) {
-//     console.error('Error occurred:', error);
-//     res.status(400).json({ error: 'Product could not be saved' });
-//   }
-// };
+    res.set('Content-Type',contentType)
 
+    return res.send(data)
+  }
 
-
+}

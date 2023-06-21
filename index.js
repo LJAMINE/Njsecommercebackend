@@ -2,6 +2,8 @@ const express=require('express');
 const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const cookieparser=require('cookie-parser');
+var cors = require('cors')
+
 
 //imports routes
 const authRoutes=require('./routes/auth_routes');
@@ -25,6 +27,7 @@ mongoose.connect(url)
 
 //middlewares
 app.use(express.json())
+
 // Validation middleware
 app.use(
   
@@ -33,6 +36,7 @@ app.use(
   body('phoneNumber').isMobilePhone(),
   body('password').notEmpty().isLength({ min: 6, max: 10 }).withMessage('Password must be between 6 to 10 characters')
 );
+app.use(cors())
 
 app.use(cookieparser())
 

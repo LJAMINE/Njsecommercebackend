@@ -28,24 +28,3 @@ exports.userSignupValidator = [
 
 
 
-// const { validationResult } = require('express-validator');
-
-// exports.userSignupValidator=(req,res,next)=>{
-//     req.check('name','name is required').notEmpty();
-//     req.check('email').isEmail();
-
-//     req.check('password')
-//     .notEmpty()
-//     .isLength({min:6,max:10})
-//     .withMessage('Password must between 6 to 10 caracters')
-
-    // const errors=req.validationErrors();
-
-
-
-
-    // if (errors) {
-    //     return res.status(400).json(errors);
-    // }
-    // next();
-// };
