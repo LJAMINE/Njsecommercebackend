@@ -10,10 +10,7 @@ router.get("/authwithtoken",authwithToken);
 router.post('/signup',userSignupValidator,signup)
 router.post('/signin',signin)
 router.get('/signout',signout)
-//router.get("/authwithtoken2",authwithtoken2);
-// router.get("/hello",requireSignIn,(req,res)=>{
-//     res.send('hello');
-// })
+
 router.get('/hello',requireSignIn,(req,res)=>{
     res.send('hello there')
 })
