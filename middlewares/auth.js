@@ -3,6 +3,10 @@ var { expressjwt: jwt } = require("express-jwt");
 require('dotenv').config();
 
 
+// Other app configuration and route setup
+
+
+
  exports.requireSignIn=jwt({
   secret:process.env.JWT_SECRET,
   algorithms:["HS256"],

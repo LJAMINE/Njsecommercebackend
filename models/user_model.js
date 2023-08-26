@@ -1,7 +1,14 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { v1: uuidv1 } = require('uuid');
+const bcrypt = require('bcrypt');
+const { number } = require('joi');
+
 const userSchema = new mongoose.Schema({
+    codeotp:{
+        type: Number,
+        
+    },
     name: {
         type: String,
         trim: true,

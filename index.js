@@ -2,8 +2,8 @@ const express=require('express');
 const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const cookieparser=require('cookie-parser');
-var cors = require('cors')
-const nodemailer=require('nodemailer');
+const session = require('express-session');
+
 
 
 //imports routes
@@ -37,8 +37,12 @@ app.use(
   body('phoneNumber').isMobilePhone(),
   body('password').notEmpty().isLength({ min: 6, max: 10 }).withMessage('Password must be between 6 to 10 characters')
 );
-app.use(cors())
 app.use(cookieparser())
+app.use(session({
+  secret: 'your-secret-key', // A random secret key to sign the session ID cookie
+  resave: false,
+  saveUninitialized: false,
+}));
 
 
 
@@ -52,36 +56,7 @@ app.use('/api/product',productRoutes);
 
 
 
-function sendEmail(){
 
-  return new Promise((resolve,reject)=>{
-
-    const transporter =nodemailer.createTransport({
-
-      service:'gmail',
-      auth:{
-        user:'aminelmgrmj1@gmail.com',
-        pass:'wwqmbexuvzgoqoju'
-      }
-    })
-    
-   const mail_configs={
-    from:'aminelmgrmj1@gmail.com',
-    to:'aminelmgrmj@gmail.com',
-    subject:'testing email ppppp',
-    text:'checking if email sent'
-   }
-
-transporter.sendMail(mail_configs,function(error,info){
-  if (error){
-    console.log(error)
-    return reject({message:'an error has occured'})
-  }
-  return resolve ({message:"email sent succesfuly"})
-})
-
-  })
-}
 
 app.get('/',(req,res)=>{
   sendEmail()
