@@ -1,22 +1,44 @@
-const category = require('../models/category');
 const Category = require('../models/category');
+const fs = require('fs');
+const Joi = require('joi');
+const mongoose = require('mongoose');
+const _ = require('lodash');
 
-exports.createCategory = (req, res) => {
-  const category = new Category(req.body);
 
-  category
-    .save()
-    .then(savedCategory => {
-      res.json({
-        category: savedCategory
-      });
-    })
-    .catch(err => {
-      res.status(400).json({
-        error: 'Bad request!!!'
-      });
-    });
+const schema = Joi.object({
+  name: Joi.string().required()
+  
+});
+
+exports.createCategory = async (req,res) => {
+  try {
+  
+    const file =req.file;
+      console.log(file);
+
+     const categoryImage=`uploads/${file.filename}`;
+
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    const { name} = value;
+
+    var data = {
+      "name":name,
+      "photo": categoryImage
+    }
+
+    
+    const savedCategory = await Category(data).save();
+    res.json({ category: savedCategory });
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(400).json({ error: 'Category could not be created' });
+  }
 };
+
+
 
 exports.categoryId = (req, res, next, id) => {
   Category.findById(id)

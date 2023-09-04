@@ -24,13 +24,16 @@ const productSchema= new mongoose.Schema({
         ref:'Category',
         require:true
     },
-    shipping:{
+    isPromo:{
         type:Boolean,
-        require:false,
         default:false
-    } ,photo:{
-        data:Buffer,
-        contentType:String,
+       
+    } ,
+    commission:{
+        type:Number,
+    }
+    ,photo:{
+        type:String,
     },
 
 },{timestamps:true});

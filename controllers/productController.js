@@ -4,16 +4,8 @@ const multer = require('multer');
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const _ =require('lodash');
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads/'); // Specify the destination folder for uploaded files
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname); // Use the original file name
-  },
-});
 
-const upload = multer({ storage });
+
 
 const schema = Joi.object({
   name: Joi.string().required(),
@@ -21,58 +13,48 @@ const schema = Joi.object({
   price: Joi.number().required(),
   quantity: Joi.number().integer().required(),
   category: Joi.string().required(),
-});
+  commission:Joi.number().integer(),
+  isPromo:Joi.boolean()
 
+});
 exports.createProduct = async (req, res) => {
   try {
-    await new Promise((resolve, reject) => {
-      upload.single('photo')(req, res, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    const file =req.file;
+      console.log(file);
+
+    const ProductImage = `uploads/${req.file.filename}`;
+
 
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { name, description, price, quantity,category } = value;
-    
-    const categoryObj =  new mongoose.Types.ObjectId(category); // Convert category to ObjectId
+    const { name, description, price, quantity, category, isPromo, commission } = value;
 
-    const productFields = {
-      name,
-      description,
-      price: parseFloat(price), // Convert price to a number
-      quantity: parseInt(quantity),
-       category: categoryObj,
+
+    const categoryObj = new mongoose.Types.ObjectId(category); // Convert category to ObjectId
+
+    const productData = {
+      "name":name,
+      "description":description,
+      "price":price, 
+      "quantity": quantity,
+      "category": categoryObj,
+      "commission": commission,
+      "photo": ProductImage,
     };
 
-    const product = new Product(productFields);
+    // const product = new Product(productData);
 
-    if (req.file) {
-      if (req.file.size > 1 * 1024 * 1024) {
-        // 1 MB limit
-        return res.status(400).json({
-          error: 'Image should be less than 1MB',
-        });
-      }
-
-      const photoData = fs.readFileSync(req.file.path);
-      product.photo.data = photoData;
-      product.photo.contentType = req.file.mimetype;
-    }
-    const savedProduct = await product.save();
+    const savedProduct = await Product(productData).save();
     res.json({ product: savedProduct });
   } catch (error) {
     console.error('Error occurred:', error);
     res.status(400).json({ error: 'Product could not be saved' });
   }
 };
+
 
 exports.productById = (req, res, next, id) => {
   Product.findById(id)

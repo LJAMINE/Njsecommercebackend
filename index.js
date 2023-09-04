@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const cookieparser=require('cookie-parser');
 const session = require('express-session');
+const bodyParser = require('body-parser'); 
 
 
 
@@ -29,6 +30,11 @@ mongoose.connect(url)
 //middlewares
 app.use(express.json())
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(bodyParser.json())
+
+
 // Validation middleware
 app.use(
   
@@ -53,7 +59,7 @@ app.use('/api',authRoutes);
 app.use('/api',userRoutes);
 app.use('/api/category',categoryRoutes);
 app.use('/api/product',productRoutes);
-
+app.use('/api/uploads', express.static('uploads'));
 
 
 

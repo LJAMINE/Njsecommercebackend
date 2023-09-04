@@ -6,7 +6,12 @@ const categorySchema= new mongoose.Schema({
         require:true,
         maxLength:32,
         trim:true
-    }
+    },photo:{
+        type:String,
+        require:true,
+
+    },
+
 },{timestamps:true});
 
 module.exports=mongoose.model('Category',categorySchema);
